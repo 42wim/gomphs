@@ -17,7 +17,7 @@ var showRTT bool
 var width string = "2"
 
 func init() {
-	flag.StringVar(&pingIP, "hosts", "", "ip addresses to ping, space seperated (e.g \"8.8.8.8 8.8.4.4\")")
+	flag.StringVar(&pingIP, "hosts", "", "ip addresses/hosts to ping, space seperated (e.g \"8.8.8.8 8.8.4.4 google.com 2a00:1450:400c:c07::66\")")
 	flag.BoolVar(&showRTT, "showrtt", false, "show roundtrip time in ms")
 	flag.Parse()
 	if flag.NFlag() == 0 {
@@ -57,9 +57,12 @@ func main() {
 	p := fastping.NewPinger()
 
 	for _, host := range strings.Fields(pingIP) {
-		ra, _ := net.ResolveIPAddr("ip4:icmp", host)
+		ra, err := net.ResolveIPAddr("ip:icmp", host)
+		if err != nil {
+			log.Fatal(host, ": ", err)
+		}
 		p.AddIPAddr(ra)
-		mylist = append(mylist, host)
+		mylist = append(mylist, ra.String())
 	}
 	p.OnRecv = func(addr *net.IPAddr, rtt time.Duration) {
 		result[addr.String()] = MilliDuration(rtt).String()
