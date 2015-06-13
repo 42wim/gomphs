@@ -3,6 +3,7 @@
 Simple tool to ping multiple hosts at once with an overview
 
 ## usage 
+Needs to be run as root (raw sockets for icmp)
 
 ```
 # gomphs
@@ -11,8 +12,10 @@ usage:
   -showrtt=false: show roundtrip time in ms
 ```
 
+```
 . host is up
 ! host is down
+```
 
 * With showrtt enabled 
 
@@ -33,8 +36,6 @@ After 20 pings the header will be repeated
 0004| . | ! | . |
 0005| . | ! | . |
 ```
-
-## example
 
 ```
 # gomphs -hosts "8.8.8.8 192.168.1.1 8.8.4.4" -showrtt
