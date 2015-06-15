@@ -37,7 +37,7 @@ After 20 pings the header will be repeated
 0004|  12 |   ! |  12 |  39 | 109 |
 0005|  12 |   ! |  13 |  38 | 109 |
 
-# gomphs -hosts "8.8.8.8 192.168.1.1 8.8.4.4 2a00:1450:400c:c07::66 facebook.com" -showrtt
+# gomphs -hosts "8.8.8.8 192.168.1.1 8.8.4.4 2a00:1450:400c:c07::66 facebook.com"
     | 1 | 2 | 3 | 4 | 5 |
 0000| . | ! | . | . | . |
 0001| . | ! | . | . | . |
