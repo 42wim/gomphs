@@ -2,7 +2,10 @@
 
 Simple tool to ping multiple hosts at once with a CLI and web-based overview.
 
-## usage 
+## Download
+[Binaries] (https://github.com/42wim/gomphs/releases)
+
+## Usage 
 Needs to be run as root (raw sockets for icmp)  
 When using hostnames with ipv4 and ipv6 addresses, preference goes to ipv4. (-expand option shows both)
 
@@ -16,13 +19,13 @@ Usage of ./gomphs:
   -web=false: enable webserver
 ```
 
-### no options
+##### no options
 ```
 . host is up
 ! host is down
 ```
 
-### showrtt
+##### showrtt
 Add -showrtt on commandline   
 
 When rtt > 1s it will just show ">1s"  
@@ -30,13 +33,13 @@ When rtt < 0ms it will just show 0
 
 After 25 pings the header will be repeated
 
-### expand 
+##### expand 
 Add -expand on commandline  
 
 When using expand this also prints an extra (onetime) header so you know what ip addresses belong to what number.
 See examples.
 
-### webserver
+##### webserver
 Add -web on commandline  
 
 The web GUI is by default available via http://<server-running-gomphs>:8887/stream  
@@ -44,7 +47,9 @@ Use -port to use another port.
 
 When an IP address/host isn't reachable, this will drop to -10 on the Y-axis. 
 
-## example
+## Examples
+
+##### using web, expand and showrtt
 ```
 # gomphs -hosts="facebook.com slashdot.org www.linkedin.com" -showrtt -expand -web
 ```
@@ -70,7 +75,7 @@ When an IP address/host isn't reachable, this will drop to -10 on the Y-axis.
 0005| . | ! | . | . | . |
 ```
 
-* Using expand
+##### using expand
 Facebook resolves into 2 addresses (ipv4/ipv6), see 5 and 6 in example.  
 When using expand this also prints an extra (onetime) header so you know what ip addresses belong to what number
 
@@ -108,4 +113,16 @@ When using expand this also prints an extra (onetime) header so you know what ip
 0004| . | ! | . | . | . | . |
 0005| . | ! | . | . | . | . |
 0006| . | ! | . | . | . | . |
+```
+
+## Building
+Install Go using your package manager or from the website https://golang.org/doc/install
+Download gomphs source or use git
+
+Example
+
+```
+$ git clone https://github.com/42wim/gomphs.git
+$ cd gomphs
+$ go build
 ```
