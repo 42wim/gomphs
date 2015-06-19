@@ -69,9 +69,11 @@ func webStreamHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func printFirstHeader() {
+	index := 1
 	for _, key := range ipList {
-		for index, content := range ipListMap[key] {
-			fmt.Printf("%d=%s\n", index+1, content)
+		for _, content := range ipListMap[key] {
+			fmt.Printf("%d=%s\n", index, content)
+			index += 1
 		}
 	}
 }
