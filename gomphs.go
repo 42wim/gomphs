@@ -14,7 +14,7 @@ import (
 	"github.com/tatsushid/go-fastping"
 )
 
-var pingIP string
+var pingIP, listenPort string
 var showRTT bool
 var expandDNS bool
 var width string = "2"
@@ -26,6 +26,7 @@ func init() {
 	flag.StringVar(&pingIP, "hosts", "", "ip addresses/hosts to ping, space seperated (e.g \"8.8.8.8 8.8.4.4 google.com 2a00:1450:400c:c07::66\")")
 	flag.BoolVar(&showRTT, "showrtt", false, "show roundtrip time in ms")
 	flag.BoolVar(&expandDNS, "expand", false, "use all available ip's (ipv4/ipv6) of a hostname (multiple A, AAAA)")
+	flag.StringVar(&listenPort, "port", "8887", "port the webserver listens on")
 	flag.Parse()
 	if flag.NFlag() == 0 {
 		fmt.Println("usage: ")
@@ -77,7 +78,7 @@ func main() {
 	var rowcounter int = 0
 	ipListMap = make(map[string][]string)
 	g := &gomphs{}
-	listener, err := net.Listen("tcp", ":8887")
+	listener, err := net.Listen("tcp", ":"+listenPort)
 	if err != nil {
 		log.Fatal(err)
 	}
