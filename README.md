@@ -1,37 +1,54 @@
 # gomphs
 
-Simple tool to ping multiple hosts at once with an overview
+Simple tool to ping multiple hosts at once with a CLI and web-based overview.
 
 ## usage 
 Needs to be run as root (raw sockets for icmp)  
-When using hostnames with ipv4 and ipv6 addresses, preference goes to ipv4.
+When using hostnames with ipv4 and ipv6 addresses, preference goes to ipv4. (-expand option shows both)
 
 ```
 # gomphs
-usage:
-  -expand=false: use all available ip's (ipv4/ipv6) of a hostname (multiple A, AAAA).
+Usage of ./gomphs:
+  -expand=false: use all available ip's (ipv4/ipv6) of a hostname (multiple A, AAAA)
   -hosts="": ip addresses/hosts to ping, space seperated (e.g "8.8.8.8 8.8.4.4 google.com 2a00:1450:400c:c07::66")
+  -port="8887": port the webserver listens on
   -showrtt=false: show roundtrip time in ms
+  -web=false: enable webserver
 ```
 
+### no options
 ```
 . host is up
 ! host is down
 ```
 
-* With showrtt enabled 
+### showrtt
+Add -showrtt on commandline   
 
 When rtt > 1s it will just show ">1s"  
 When rtt < 0ms it will just show 0  
 
 After 25 pings the header will be repeated
 
-* With expand enabled
+### expand 
+Add -expand on commandline  
 
 When using expand this also prints an extra (onetime) header so you know what ip addresses belong to what number.
-See examples
+See examples.
+
+### webserver
+Add -web on commandline  
+
+The web GUI is by default available via http://<server-running-gomphs>:8887/stream  
+Use -port to use another port.
+
+When an IP address/host isn't reachable, this will drop to -10 on the Y-axis. 
 
 ## example
+```
+# gomphs -hosts="facebook.com slashdot.org www.linkedin.com" -showrtt -expand -web
+```
+ ![stream](http://i.snag.gy/Ow7kK.jpg)
 
 ```
 # gomphs -hosts "8.8.8.8 192.168.1.1 8.8.4.4 2a00:1450:400c:c07::66 facebook.com" -showrtt
