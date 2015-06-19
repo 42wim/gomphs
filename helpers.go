@@ -48,7 +48,7 @@ func webReadJsonHandler(g *gomphs) http.HandlerFunc {
 func webStreamHandler(w http.ResponseWriter, r *http.Request) {
 	push := "d.push([now"
 	labels := "labels: [\"time\""
-	index := 0
+	index := 1
 	for _, key := range ipList {
 		for _, value := range ipListMap[key] {
 			push = fmt.Sprintf("%s,data[%d]", push, index)
