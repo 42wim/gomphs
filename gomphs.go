@@ -103,7 +103,7 @@ func main() {
 			checkHostErr(host, err)
 			p.AddIPAddr(ra)
 			ipList = append(ipList, ra.String())
-			ipListMap[host] = append(ipListMap[host], ra.String())
+			ipListMap[ra.String()] = append(ipListMap[ra.String()], ra.String())
 		}
 	}
 	g.IpList = ipList
