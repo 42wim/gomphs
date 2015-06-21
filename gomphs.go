@@ -8,6 +8,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"os/signal"
 	"strings"
 	"time"
 
@@ -20,6 +21,7 @@ var width string = "2"
 
 var ipList []string
 var ipListMap map[string][]string
+var pingStats map[string]stats
 
 func init() {
 	flag.BoolVar(&enableWeb, "web", false, "enable webserver")
@@ -50,6 +52,12 @@ func (hd MilliDuration) String() string {
 	}
 }
 
+func (hd MilliDuration) Int() int {
+	milliseconds := time.Duration(hd).Nanoseconds()
+	milliseconds = milliseconds / 1000000
+	return int(milliseconds)
+}
+
 type gomphs struct {
 	latestEntry []byte
 	pingIP      string
@@ -57,6 +65,14 @@ type gomphs struct {
 	expandDNS   bool
 	IpList      []string
 	IpListMap   map[string][]string
+}
+
+type stats struct {
+	min   int
+	max   int
+	avg   int
+	count int
+	rtts  []int
 }
 
 func (g *gomphs) update(result map[string]string) {
@@ -77,6 +93,7 @@ func (g *gomphs) update(result map[string]string) {
 func main() {
 	var rowcounter int = 0
 	ipListMap = make(map[string][]string)
+	pingStats = make(map[string]stats)
 	g := &gomphs{}
 
 	if enableWeb {
@@ -90,6 +107,20 @@ func main() {
 	}
 
 	result := make(map[string]string)
+
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+	go func() {
+		for range c {
+			fmt.Printf("\n%-32s: %4s %4s %4s %5s\n", "source", "min", "max", "avg", "ploss")
+			for key, stat := range pingStats {
+				ploss := stat.count - len(stat.rtts)
+				plosspct := float32(ploss) / float32(stat.count)
+				fmt.Printf("%-32s: %4d %4d %4d %5d(%.2f%%)\n", key, stat.min, stat.max, stat.avg, ploss, plosspct)
+			}
+			os.Exit(0)
+		}
+	}()
 	p := fastping.NewPinger()
 
 	for _, host := range strings.Fields(pingIP) {
@@ -114,6 +145,18 @@ func main() {
 	g.IpListMap = ipListMap
 	p.OnRecv = func(addr *net.IPAddr, rtt time.Duration) {
 		result[addr.String()] = MilliDuration(rtt).String()
+		stats := pingStats[addr.String()]
+		if stats.count == 0 {
+			stats.min = 100000
+		}
+		if MilliDuration(rtt).Int() > stats.max {
+			stats.max = MilliDuration(rtt).Int()
+		}
+		if MilliDuration(rtt).Int() < stats.min {
+			stats.min = MilliDuration(rtt).Int()
+		}
+		stats.rtts = append(stats.rtts, MilliDuration(rtt).Int())
+		pingStats[addr.String()] = stats
 	}
 	p.OnIdle = func() {
 		if rowcounter%25 == 0 {
@@ -123,7 +166,7 @@ func main() {
 			}
 		}
 		g.update(result)
-		fmt.Printf("%04d", rowcounter)
+		fmt.Printf("%04d", rowcounter+1)
 		for _, key := range ipList {
 			for _, value := range ipListMap[key] {
 				if result[value] != "" {
@@ -138,6 +181,23 @@ func main() {
 			}
 		}
 		fmt.Println("|")
+
+		for _, key := range ipList {
+			for _, value := range ipListMap[key] {
+				if result[value] != "" {
+					stats := pingStats[value]
+					stats.count = rowcounter + 2
+					stats.avg = 0
+					i := 1
+					for _, rtt := range stats.rtts {
+						stats.avg = stats.avg + rtt
+						i += 1
+					}
+					stats.avg = stats.avg / i
+					pingStats[value] = stats
+				}
+			}
+		}
 		result = make(map[string]string)
 		rowcounter += 1
 	}
