@@ -140,7 +140,7 @@ func main() {
 					stat.avg = stat.avg / (rowcounter - ploss)
 				}
 				plosspct := float32(ploss) / float32(rowcounter) * 100
-				fmt.Printf("%-38s: %4d %4d %4d %5d(%.2f%%)\n", key, stat.min, stat.max, stat.avg, ploss, plosspct)
+				fmt.Printf("%-38s: %4d %4d %4d %5d/%d (%.2f%%)\n", key, stat.min, stat.max, stat.avg, ploss, rowcounter, plosspct)
 			}
 			os.Exit(0)
 		}
