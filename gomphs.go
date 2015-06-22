@@ -118,8 +118,28 @@ func main() {
 		for range c {
 			fmt.Printf("\n%-38s: %4s %4s %4s %5s\n", "source", "min", "max", "avg", "ploss")
 			for key, stat := range pingStats {
-				ploss := stat.count - len(stat.rtts)
-				plosspct := float32(ploss) / float32(stat.count)
+				ploss := 0
+				for _, entry := range stat.rtts[0:rowcounter] {
+					if entry != -1 {
+						if entry > stat.max {
+							stat.max = entry
+						}
+						if entry < stat.min {
+							stat.min = entry
+						}
+						stat.avg = stat.avg + entry
+					} else {
+						ploss++
+					}
+				}
+				if ploss == rowcounter {
+					stat.min = -1
+					stat.max = -1
+					stat.avg = -1
+				} else {
+					stat.avg = stat.avg / (rowcounter - ploss)
+				}
+				plosspct := float32(ploss) / float32(rowcounter) * 100
 				fmt.Printf("%-38s: %4d %4d %4d %5d(%.2f%%)\n", key, stat.min, stat.max, stat.avg, ploss, plosspct)
 			}
 			os.Exit(0)
@@ -153,12 +173,6 @@ func main() {
 		if stats.count == 0 {
 			stats.min = 100000
 		}
-		if milliDuration(rtt).Int() > stats.max {
-			stats.max = milliDuration(rtt).Int()
-		}
-		if milliDuration(rtt).Int() < stats.min {
-			stats.min = milliDuration(rtt).Int()
-		}
 		stats.rtts = append(stats.rtts, milliDuration(rtt).Int())
 		pingStats[addr.String()] = stats
 	}
@@ -183,6 +197,9 @@ func main() {
 					}
 					color.Unset()
 				} else {
+					stats := pingStats[value]
+					stats.rtts = append(stats.rtts, -1)
+					pingStats[value] = stats
 					color.Set(color.BgRed, color.FgYellow, color.Bold)
 					fmt.Printf("%"+width+"s", "!")
 					color.Unset()
@@ -190,23 +207,6 @@ func main() {
 			}
 		}
 		fmt.Println(" ")
-
-		for _, key := range ipList {
-			for _, value := range ipListMap[key] {
-				if result[value] != "" {
-					stats := pingStats[value]
-					stats.count = rowcounter + 2
-					stats.avg = 0
-					i := 1
-					for _, rtt := range stats.rtts {
-						stats.avg = stats.avg + rtt
-						i++
-					}
-					stats.avg = stats.avg / i
-					pingStats[value] = stats
-				}
-			}
-		}
 		result = make(map[string]string)
 		rowcounter++
 	}
