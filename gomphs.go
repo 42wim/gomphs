@@ -12,11 +12,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/fatih/color"
 	"github.com/tatsushid/go-fastping"
 )
 
 var pingIP, listenPort string
-var expandDNS, showRTT, enableWeb bool
+var expandDNS, showRTT, enableWeb, flagNoColor bool
 var width string = "2"
 
 var ipList []string
@@ -24,6 +25,7 @@ var ipListMap map[string][]string
 var pingStats map[string]stats
 
 func init() {
+	flag.BoolVar(&flagNoColor, "nocolor", false, "disable color output")
 	flag.BoolVar(&enableWeb, "web", false, "enable webserver")
 	flag.BoolVar(&expandDNS, "expand", false, "use all available ip's (ipv4/ipv6) of a hostname (multiple A, AAAA)")
 	flag.StringVar(&listenPort, "port", "8887", "port the webserver listens on")
@@ -36,7 +38,10 @@ func init() {
 		os.Exit(2)
 	}
 	if showRTT {
-		width = "4"
+		width = "3"
+	}
+	if flagNoColor {
+		color.NoColor = true
 	}
 }
 
@@ -48,7 +53,7 @@ func (hd MilliDuration) String() string {
 	if milliseconds > 1000 {
 		return fmt.Sprintf(">1s")
 	} else {
-		return fmt.Sprintf("%4d", milliseconds)
+		return fmt.Sprintf("%"+width+"d", milliseconds)
 	}
 }
 
@@ -112,11 +117,11 @@ func main() {
 	signal.Notify(c, os.Interrupt)
 	go func() {
 		for range c {
-			fmt.Printf("\n%-32s: %4s %4s %4s %5s\n", "source", "min", "max", "avg", "ploss")
+			fmt.Printf("\n%-38s: %4s %4s %4s %5s\n", "source", "min", "max", "avg", "ploss")
 			for key, stat := range pingStats {
 				ploss := stat.count - len(stat.rtts)
 				plosspct := float32(ploss) / float32(stat.count)
-				fmt.Printf("%-32s: %4d %4d %4d %5d(%.2f%%)\n", key, stat.min, stat.max, stat.avg, ploss, plosspct)
+				fmt.Printf("%-38s: %4d %4d %4d %5d(%.2f%%)\n", key, stat.min, stat.max, stat.avg, ploss, plosspct)
 			}
 			os.Exit(0)
 		}
@@ -169,18 +174,23 @@ func main() {
 		fmt.Printf("%04d", rowcounter+1)
 		for _, key := range ipList {
 			for _, value := range ipListMap[key] {
+				fmt.Printf(" ")
 				if result[value] != "" {
+					color.Set(color.BgGreen, color.FgYellow, color.Bold)
 					if showRTT {
-						fmt.Printf("|%"+width+"s ", result[value])
+						fmt.Printf("%"+width+"s", result[value])
 					} else {
-						fmt.Printf("|%"+width+"s ", ".")
+						fmt.Printf("%"+width+"s", ".")
 					}
+					color.Unset()
 				} else {
-					fmt.Printf("|%"+width+"s ", "!")
+					color.Set(color.BgRed, color.FgYellow, color.Bold)
+					fmt.Printf("%"+width+"s", "!")
+					color.Unset()
 				}
 			}
 		}
-		fmt.Println("|")
+		fmt.Println(" ")
 
 		for _, key := range ipList {
 			for _, value := range ipListMap[key] {

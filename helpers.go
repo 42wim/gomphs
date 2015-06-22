@@ -79,15 +79,15 @@ func printFirstHeader() {
 }
 
 func printHeader() {
-	fmt.Printf("   ")
+	fmt.Printf("    ")
 	index := 0
 	for _, key := range ipList {
 		for _, _ = range ipListMap[key] {
 			index += 1
-			fmt.Printf(" #%"+width+"d", index)
+			fmt.Printf(" %"+width+"d", index)
 		}
 	}
-	fmt.Println(" #")
+	fmt.Println(" ")
 }
 
 func checkHostErr(host string, err error) {
