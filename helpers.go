@@ -40,7 +40,7 @@ var webStream = `<html>
         </body>
         </html>`
 
-func webReadJsonHandler(g *gomphs) http.HandlerFunc {
+func webReadJSONHandler(g *gomphs) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, string(g.latestEntry))
 	}
@@ -57,7 +57,7 @@ func webStreamHandler(w http.ResponseWriter, r *http.Request) {
 			} else {
 				labels = fmt.Sprintf("%s,\"%s\"", labels, key)
 			}
-			index += 1
+			index++
 		}
 	}
 	push = push + "])"
@@ -73,7 +73,7 @@ func printFirstHeader() {
 	for _, key := range ipList {
 		for _, content := range ipListMap[key] {
 			fmt.Printf("%d=%s\n", index, content)
-			index += 1
+			index++
 		}
 	}
 }
@@ -82,8 +82,8 @@ func printHeader() {
 	fmt.Printf("    ")
 	index := 0
 	for _, key := range ipList {
-		for _, _ = range ipListMap[key] {
-			index += 1
+		for _ = range ipListMap[key] {
+			index++
 			fmt.Printf(" %"+width+"d", index)
 		}
 	}

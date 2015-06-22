@@ -17,8 +17,8 @@ import (
 )
 
 var pingIP, listenPort string
-var expandDNS, showRTT, enableWeb, flagNoColor bool
-var width string = "2"
+var flagExpandDNS, flagShowRTT, flagEnableWeb, flagNoColor bool
+var width = "2"
 
 var ipList []string
 var ipListMap map[string][]string
@@ -26,18 +26,18 @@ var pingStats map[string]stats
 
 func init() {
 	flag.BoolVar(&flagNoColor, "nocolor", false, "disable color output")
-	flag.BoolVar(&enableWeb, "web", false, "enable webserver")
-	flag.BoolVar(&expandDNS, "expand", false, "use all available ip's (ipv4/ipv6) of a hostname (multiple A, AAAA)")
+	flag.BoolVar(&flagEnableWeb, "web", false, "enable webserver")
+	flag.BoolVar(&flagExpandDNS, "expand", false, "use all available ip's (ipv4/ipv6) of a hostname (multiple A, AAAA)")
 	flag.StringVar(&listenPort, "port", "8887", "port the webserver listens on")
 	flag.StringVar(&pingIP, "hosts", "", "ip addresses/hosts to ping, space seperated (e.g \"8.8.8.8 8.8.4.4 google.com 2a00:1450:400c:c07::66\")")
-	flag.BoolVar(&showRTT, "showrtt", false, "show roundtrip time in ms")
+	flag.BoolVar(&flagShowRTT, "showrtt", false, "show roundtrip time in ms")
 	flag.Parse()
 	if flag.NFlag() == 0 {
 		fmt.Println("usage: ")
 		flag.PrintDefaults()
 		os.Exit(2)
 	}
-	if showRTT {
+	if flagShowRTT {
 		width = "3"
 	}
 	if flagNoColor {
@@ -45,31 +45,30 @@ func init() {
 	}
 }
 
-type MilliDuration time.Duration
+type milliDuration time.Duration
 
-func (hd MilliDuration) String() string {
+func (hd milliDuration) String() string {
 	milliseconds := time.Duration(hd).Nanoseconds()
 	milliseconds = milliseconds / 1000000
 	if milliseconds > 1000 {
 		return fmt.Sprintf(">1s")
-	} else {
-		return fmt.Sprintf("%"+width+"d", milliseconds)
 	}
+	return fmt.Sprintf("%"+width+"d", milliseconds)
 }
 
-func (hd MilliDuration) Int() int {
+func (hd milliDuration) Int() int {
 	milliseconds := time.Duration(hd).Nanoseconds()
 	milliseconds = milliseconds / 1000000
 	return int(milliseconds)
 }
 
 type gomphs struct {
-	latestEntry []byte
-	pingIP      string
-	showRTT     bool
-	expandDNS   bool
-	IpList      []string
-	IpListMap   map[string][]string
+	latestEntry   []byte
+	pingIP        string
+	flagShowRTT   bool
+	flagExpandDNS bool
+	IPList        []string
+	IPListMap     map[string][]string
 }
 
 type stats struct {
@@ -82,8 +81,8 @@ type stats struct {
 
 func (g *gomphs) update(result map[string]string) {
 	record := []string{time.Now().Format("2006/01/02 15:04:05")}
-	for _, key := range g.IpList {
-		for _, value := range g.IpListMap[key] {
+	for _, key := range g.IPList {
+		for _, value := range g.IPListMap[key] {
 			if result[value] != "" {
 				res := strings.Replace(result[value], " ", "", -1)
 				record = append(record, res)
@@ -96,18 +95,18 @@ func (g *gomphs) update(result map[string]string) {
 }
 
 func main() {
-	var rowcounter int = 0
+	var rowcounter int
 	ipListMap = make(map[string][]string)
 	pingStats = make(map[string]stats)
 	g := &gomphs{}
 
-	if enableWeb {
+	if flagEnableWeb {
 		listener, err := net.Listen("tcp", ":"+listenPort)
 		if err != nil {
 			log.Fatal(err)
 		}
 		go http.Serve(listener, nil)
-		http.HandleFunc("/read.json", webReadJsonHandler(g))
+		http.HandleFunc("/read.json", webReadJSONHandler(g))
 		http.HandleFunc("/stream", webStreamHandler)
 	}
 
@@ -129,7 +128,7 @@ func main() {
 	p := fastping.NewPinger()
 
 	for _, host := range strings.Fields(pingIP) {
-		if expandDNS {
+		if flagExpandDNS {
 			lookups, err := net.LookupIP(host)
 			checkHostErr(host, err)
 			ipList = append(ipList, host)
@@ -146,21 +145,21 @@ func main() {
 			ipListMap[ra.String()] = append(ipListMap[ra.String()], ra.String())
 		}
 	}
-	g.IpList = ipList
-	g.IpListMap = ipListMap
+	g.IPList = ipList
+	g.IPListMap = ipListMap
 	p.OnRecv = func(addr *net.IPAddr, rtt time.Duration) {
-		result[addr.String()] = MilliDuration(rtt).String()
+		result[addr.String()] = milliDuration(rtt).String()
 		stats := pingStats[addr.String()]
 		if stats.count == 0 {
 			stats.min = 100000
 		}
-		if MilliDuration(rtt).Int() > stats.max {
-			stats.max = MilliDuration(rtt).Int()
+		if milliDuration(rtt).Int() > stats.max {
+			stats.max = milliDuration(rtt).Int()
 		}
-		if MilliDuration(rtt).Int() < stats.min {
-			stats.min = MilliDuration(rtt).Int()
+		if milliDuration(rtt).Int() < stats.min {
+			stats.min = milliDuration(rtt).Int()
 		}
-		stats.rtts = append(stats.rtts, MilliDuration(rtt).Int())
+		stats.rtts = append(stats.rtts, milliDuration(rtt).Int())
 		pingStats[addr.String()] = stats
 	}
 	p.OnIdle = func() {
@@ -177,7 +176,7 @@ func main() {
 				fmt.Printf(" ")
 				if result[value] != "" {
 					color.Set(color.BgGreen, color.FgYellow, color.Bold)
-					if showRTT {
+					if flagShowRTT {
 						fmt.Printf("%"+width+"s", result[value])
 					} else {
 						fmt.Printf("%"+width+"s", ".")
@@ -201,7 +200,7 @@ func main() {
 					i := 1
 					for _, rtt := range stats.rtts {
 						stats.avg = stats.avg + rtt
-						i += 1
+						i++
 					}
 					stats.avg = stats.avg / i
 					pingStats[value] = stats
@@ -209,9 +208,9 @@ func main() {
 			}
 		}
 		result = make(map[string]string)
-		rowcounter += 1
+		rowcounter++
 	}
-	if expandDNS {
+	if flagExpandDNS {
 		printFirstHeader()
 	}
 	for {
