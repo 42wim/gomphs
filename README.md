@@ -63,13 +63,16 @@ When using expand this also prints an extra (onetime) header so you know what ip
 [![asciicast](https://asciinema.org/a/4hh0lgl8j23ibycubz60vko3r.png)](https://asciinema.org/a/4hh0lgl8j23ibycubz60vko3r)
 
 ## Building
-Install Go using your package manager or from the website https://golang.org/doc/install
-Download gomphs source or use git
+Make sure you have [Go](https://golang.org/doc/install) properly installed, including setting up your [GOPATH](https://golang.org/doc/code.html#GOPATH)
 
-Example
+Next, clone this repository into $GOPATH/src/github.com/42wim/gomphs
 
 ```
+$ mkdir -p $GOPATH/src/github.com/42wim
+$ cd $GOPATH/src/github.com/42wim
 $ git clone https://github.com/42wim/gomphs.git
 $ cd gomphs
+$ go get
 $ go build
 ```
+
