@@ -19,6 +19,7 @@ import (
 var pingIP, listenPort string
 var flagExpandDNS, flagShowRTT, flagEnableWeb, flagNoColor bool
 var width = "2"
+var rowcounter, maxPingCount int
 
 var ipList []string
 var ipListMap map[string][]string
@@ -31,6 +32,7 @@ func init() {
 	flag.StringVar(&listenPort, "port", "8887", "port the webserver listens on")
 	flag.StringVar(&pingIP, "hosts", "", "ip addresses/hosts to ping, space seperated (e.g \"8.8.8.8 8.8.4.4 google.com 2a00:1450:400c:c07::66\")")
 	flag.BoolVar(&flagShowRTT, "showrtt", false, "show roundtrip time in ms")
+	flag.IntVar(&maxPingCount, "c", 99999, "packets to send")
 	flag.Parse()
 	if flag.NFlag() == 0 {
 		fmt.Println("usage: ")
@@ -95,7 +97,7 @@ func (g *gomphs) update(result map[string]string) {
 }
 
 func main() {
-	var rowcounter int
+	printcounter := rowcounter
 	ipListMap = make(map[string][]string)
 	pingStats = make(map[string]stats)
 	g := &gomphs{}
@@ -116,11 +118,7 @@ func main() {
 	signal.Notify(c, os.Interrupt)
 	go func() {
 		for range c {
-			fmt.Printf("\n%-39s: %4s %4s %4s   %5s\n", "source", "min", "max", "avg", "ploss")
-			for _, host := range ipList {
-				printHostIpStat(host, rowcounter)
-				fmt.Println()
-			}
+			printStat()
 			os.Exit(0)
 		}
 	}()
@@ -158,12 +156,12 @@ func main() {
 	p.OnIdle = func() {
 		if rowcounter%25 == 0 {
 			printHeader()
-			if rowcounter == 10000 {
-				rowcounter = 0
+			if rowcounter%10000 == 0 {
+				printcounter = 0
 			}
 		}
 		g.update(result)
-		fmt.Printf("%04d", rowcounter+1)
+		fmt.Printf("%04d", printcounter+1)
 		for _, key := range ipList {
 			for _, value := range ipListMap[key] {
 				fmt.Printf(" ")
@@ -188,14 +186,19 @@ func main() {
 		fmt.Println(" ")
 		result = make(map[string]string)
 		rowcounter++
+		printcounter++
 	}
 	if flagExpandDNS {
 		printFirstHeader()
 	}
 	for {
+		if rowcounter == maxPingCount {
+			break
+		}
 		err := p.Run()
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
+	printStat()
 }

@@ -96,7 +96,7 @@ func checkHostErr(host string, err error) {
 	}
 }
 
-func printHostIpStat(host string, rowcounter int) {
+func printHostIpStat(host string) {
 	pingStatsHost := make(map[string]stats)
 	hoststat := pingStatsHost[host]
 	ipcount := len(ipListMap[host])
@@ -154,5 +154,13 @@ func printHostIpStat(host string, rowcounter int) {
 	if ipcount == 1 && ipListMap[host][0] == host {
 	} else {
 		fmt.Printf("+%-38s: %4d %4d %4d %5d/%d (%.2f%%)\n", host, hoststat.min, hoststat.max, hoststat.avg, hostploss, rowcounter*ipcount, plosspct)
+	}
+}
+
+func printStat() {
+	fmt.Printf("\n%-39s: %4s %4s %4s   %5s\n", "source", "min", "max", "avg", "ploss")
+	for _, host := range ipList {
+		printHostIpStat(host)
+		fmt.Println()
 	}
 }
