@@ -95,3 +95,64 @@ func checkHostErr(host string, err error) {
 		log.Fatal(host, ": ", err)
 	}
 }
+
+func printHostIpStat(host string, rowcounter int) {
+	pingStatsHost := make(map[string]stats)
+	hoststat := pingStatsHost[host]
+	ipcount := len(ipListMap[host])
+	hoststat.min = 10000
+	hostploss := 0
+	for _, hostip := range ipListMap[host] {
+		stat := pingStats[hostip]
+		ploss := 0
+		for _, entry := range stat.rtts[0:rowcounter] {
+			if entry != -1 {
+				if entry > hoststat.max {
+					hoststat.max = entry
+				}
+				if entry > stat.max {
+					stat.max = entry
+				}
+				if entry < hoststat.min {
+					hoststat.min = entry
+				}
+				if entry < stat.min {
+					stat.min = entry
+				}
+				stat.avg = stat.avg + entry
+				hoststat.avg = hoststat.avg + entry
+			} else {
+				ploss++
+				hostploss++
+			}
+		}
+		if ploss == rowcounter {
+			stat.min = -1
+			stat.max = -1
+			stat.avg = -1
+		} else {
+			stat.avg = stat.avg / (rowcounter - ploss)
+		}
+		plosspct := float32(ploss) / float32(rowcounter) * 100
+		if len(ipListMap[host]) == 1 && hostip == host {
+			fmt.Printf("+")
+		} else {
+			fmt.Printf("|")
+		}
+		fmt.Printf("%-38s: %4d %4d %4d %5d/%d (%.2f%%)\n", hostip, stat.min, stat.max, stat.avg, ploss, rowcounter, plosspct)
+	}
+	if hostploss == rowcounter*ipcount {
+		hoststat.min = -1
+		hoststat.max = -1
+		hoststat.avg = -1
+	} else {
+		hoststat.avg = hoststat.avg / ((rowcounter * ipcount) - hostploss)
+	}
+
+	plosspct := float32(hostploss) / float32(rowcounter*ipcount) * 100
+	pingStatsHost[host] = hoststat
+	if ipcount == 1 && ipListMap[host][0] == host {
+	} else {
+		fmt.Printf("+%-38s: %4d %4d %4d %5d/%d (%.2f%%)\n", host, hoststat.min, hoststat.max, hoststat.avg, hostploss, rowcounter*ipcount, plosspct)
+	}
+}

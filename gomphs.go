@@ -116,31 +116,10 @@ func main() {
 	signal.Notify(c, os.Interrupt)
 	go func() {
 		for range c {
-			fmt.Printf("\n%-38s: %4s %4s %4s %5s\n", "source", "min", "max", "avg", "ploss")
-			for key, stat := range pingStats {
-				ploss := 0
-				for _, entry := range stat.rtts[0:rowcounter] {
-					if entry != -1 {
-						if entry > stat.max {
-							stat.max = entry
-						}
-						if entry < stat.min {
-							stat.min = entry
-						}
-						stat.avg = stat.avg + entry
-					} else {
-						ploss++
-					}
-				}
-				if ploss == rowcounter {
-					stat.min = -1
-					stat.max = -1
-					stat.avg = -1
-				} else {
-					stat.avg = stat.avg / (rowcounter - ploss)
-				}
-				plosspct := float32(ploss) / float32(rowcounter) * 100
-				fmt.Printf("%-38s: %4d %4d %4d %5d/%d (%.2f%%)\n", key, stat.min, stat.max, stat.avg, ploss, rowcounter, plosspct)
+			fmt.Printf("\n%-39s: %4s %4s %4s   %5s\n", "source", "min", "max", "avg", "ploss")
+			for _, host := range ipList {
+				printHostIpStat(host, rowcounter)
+				fmt.Println()
 			}
 			os.Exit(0)
 		}
