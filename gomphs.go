@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"runtime"
 	"strings"
 	"time"
 
@@ -44,6 +45,13 @@ func init() {
 	}
 	if flagNoColor {
 		color.NoColor = true
+	}
+	if runtime.GOOS != "windows" {
+		if os.Geteuid() != 0 {
+			fmt.Println("Please start gomphs as root or use sudo!")
+			fmt.Println("This is required for raw socket access.")
+			os.Exit(1)
+		}
 	}
 }
 
