@@ -18,7 +18,7 @@ import (
 )
 
 var pingIP, listenPort string
-var flagExpandDNS, flagShowRTT, flagEnableWeb, flagNoColor bool
+var flagExpandDNS, flagShowRTT, flagEnableWeb, flagNoColor, flagTimestamp bool
 var width = "2"
 var rowcounter, maxPingCount int
 
@@ -27,6 +27,7 @@ var ipListMap map[string][]string
 var pingStats map[string]stats
 
 func init() {
+	flag.BoolVar(&flagTimestamp, "timestamp", false, "enables timestamp instead of ping count")
 	flag.BoolVar(&flagNoColor, "nocolor", false, "disable color output")
 	flag.BoolVar(&flagEnableWeb, "web", false, "enable webserver")
 	flag.BoolVar(&flagExpandDNS, "expand", false, "use all available ip's (ipv4/ipv6) of a hostname (multiple A, AAAA)")
@@ -41,7 +42,7 @@ func init() {
 		os.Exit(2)
 	}
 	if flagShowRTT {
-		width = "3"
+		width = "5"
 	}
 	if flagNoColor {
 		color.NoColor = true
@@ -163,13 +164,22 @@ func main() {
 	}
 	p.OnIdle = func() {
 		if rowcounter%25 == 0 {
-			printHeader()
+			if flagTimestamp {
+				printHeader("24")
+			} else {
+				printHeader("4")
+			}
 			if rowcounter%10000 == 0 {
 				printcounter = 0
 			}
 		}
 		g.update(result)
-		fmt.Printf("%04d", printcounter+1)
+		if flagTimestamp {
+			t := time.Now()
+			fmt.Printf("%24s", t.Format(time.RFC3339))
+		} else {
+			fmt.Printf("%04d", printcounter+1)
+		}
 		for _, key := range ipList {
 			for _, value := range ipListMap[key] {
 				fmt.Printf(" ")

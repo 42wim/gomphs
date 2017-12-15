@@ -78,8 +78,8 @@ func printFirstHeader() {
 	}
 }
 
-func printHeader() {
-	fmt.Printf("    ")
+func printHeader(hw string) {
+	fmt.Printf("%"+hw+"s", " ")
 	index := 0
 	for _, key := range ipList {
 		for _ = range ipListMap[key] {
