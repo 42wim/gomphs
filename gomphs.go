@@ -14,13 +14,14 @@ import (
 	"time"
 
 	"github.com/fatih/color"
-	"github.com/tatsushid/go-fastping"
+	fastping "github.com/tatsushid/go-fastping"
 )
 
 var pingIP, listenPort string
 var flagExpandDNS, flagShowRTT, flagEnableWeb, flagNoColor, flagTimestamp bool
 var width = "2"
 var rowcounter, maxPingCount int
+var interval int
 
 var ipList []string
 var ipListMap map[string][]string
@@ -35,6 +36,7 @@ func init() {
 	flag.StringVar(&pingIP, "hosts", "", "ip addresses/hosts to ping, space seperated (e.g \"8.8.8.8 8.8.4.4 google.com 2a00:1450:400c:c07::66\")")
 	flag.BoolVar(&flagShowRTT, "showrtt", false, "show roundtrip time in ms")
 	flag.IntVar(&maxPingCount, "c", 99999, "packets to send")
+	flag.IntVar(&interval, "i", 1000, "Ping interval in Milliseconds")
 	flag.Parse()
 	if flag.NFlag() == 0 {
 		fmt.Println("usage: ")
@@ -132,6 +134,7 @@ func main() {
 		}
 	}()
 	p := fastping.NewPinger()
+	p.MaxRTT = time.Millisecond * time.Duration(interval)
 
 	for _, host := range strings.Fields(pingIP) {
 		if flagExpandDNS {
