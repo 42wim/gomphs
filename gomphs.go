@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/signal"
 	"runtime"
+	"strconv"
 	"strings"
 	"time"
 
@@ -17,23 +18,24 @@ import (
 	fastping "github.com/tatsushid/go-fastping"
 )
 
-var pingIP, listenPort string
+var pingIP, listenPort, pingLabel string
 var flagExpandDNS, flagShowRTT, flagEnableWeb, flagNoColor, flagTimestamp bool
 var width = "2"
 var rowcounter, maxPingCount int
 var interval int
 
-var ipList []string
+var ipList, ipLabelList, inputHosts, inputLabels []string
 var ipListMap map[string][]string
 var pingStats map[string]stats
 
 func init() {
-	flag.BoolVar(&flagTimestamp, "timestamp", false, "enables timestamp instead of ping count")
 	flag.BoolVar(&flagNoColor, "nocolor", false, "disable color output")
 	flag.BoolVar(&flagEnableWeb, "web", false, "enable webserver")
 	flag.BoolVar(&flagExpandDNS, "expand", false, "use all available ip's (ipv4/ipv6) of a hostname (multiple A, AAAA)")
+	flag.BoolVar(&flagTimestamp, "timestamp", false, "enables timestamp instead of ping count")
 	flag.StringVar(&listenPort, "port", "8887", "port the webserver listens on")
 	flag.StringVar(&pingIP, "hosts", "", "ip addresses/hosts to ping, space seperated (e.g \"8.8.8.8 8.8.4.4 google.com 2a00:1450:400c:c07::66\")")
+	flag.StringVar(&pingLabel, "labels", "", "labels matching the hosts, must be the same amount of values as the hosts")
 	flag.BoolVar(&flagShowRTT, "showrtt", false, "show roundtrip time in ms")
 	flag.IntVar(&maxPingCount, "c", 99999, "packets to send")
 	flag.IntVar(&interval, "i", 1000, "Ping interval in Milliseconds")
@@ -45,6 +47,21 @@ func init() {
 	}
 	if flagShowRTT {
 		width = "5"
+	}
+	inputHosts = strings.Fields(pingIP)
+	if len(pingLabel) > 0 {
+		inputLabels = strings.Fields(pingLabel)
+		if len(inputHosts) != len(inputLabels) {
+			fmt.Println("ERROR: The number of hosts vs the number of labels does not match. Usage:")
+			flag.PrintDefaults()
+			os.Exit(2)
+		}
+		for _, label := range inputLabels {
+			widthInt, _ := strconv.Atoi(width)
+			if len(label) > widthInt {
+				width = strconv.Itoa(len(label))
+			}
+		}
 	}
 	if flagNoColor {
 		color.NoColor = true
@@ -136,7 +153,8 @@ func main() {
 	p := fastping.NewPinger()
 	p.MaxRTT = time.Millisecond * time.Duration(interval)
 
-	for _, host := range strings.Fields(pingIP) {
+	labelIndex := 0
+	for _, host := range inputHosts {
 		if flagExpandDNS {
 			lookups, err := net.LookupIP(host)
 			checkHostErr(host, err)
@@ -145,14 +163,22 @@ func main() {
 				ra := &net.IPAddr{IP: ip}
 				p.AddIPAddr(ra)
 				ipListMap[host] = append(ipListMap[host], ra.String())
+				if len(inputLabels) > 0 {
+					ipLabelList = append(ipLabelList, inputLabels[labelIndex])
+				}
 			}
 		} else {
 			ra, err := net.ResolveIPAddr("ip:icmp", host)
 			checkHostErr(host, err)
 			p.AddIPAddr(ra)
+			ipLabelList = append(ipLabelList, ra.String())
 			ipList = append(ipList, ra.String())
 			ipListMap[ra.String()] = append(ipListMap[ra.String()], ra.String())
+			if len(inputLabels) > 0 {
+				ipLabelList = append(ipLabelList, inputLabels[labelIndex])
+			}
 		}
+		labelIndex++
 	}
 	g.IPList = ipList
 	g.IPListMap = ipListMap
@@ -168,9 +194,9 @@ func main() {
 	p.OnIdle = func() {
 		if rowcounter%25 == 0 {
 			if flagTimestamp {
-				printHeader("24")
+				printHeader("25", inputLabels)
 			} else {
-				printHeader("4")
+				printHeader("4", inputLabels)
 			}
 			if rowcounter%10000 == 0 {
 				printcounter = 0
