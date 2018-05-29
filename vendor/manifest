@@ -1,0 +1,75 @@
+{
+	"version": 0,
+	"dependencies": [
+		{
+			"importpath": "github.com/fatih/color",
+			"repository": "https://github.com/fatih/color",
+			"vcs": "git",
+			"revision": "2d684516a8861da43017284349b7e303e809ac21",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/tatsushid/go-fastping",
+			"repository": "https://github.com/tatsushid/go-fastping",
+			"vcs": "git",
+			"revision": "d7bb493dee3e090e2ffb6914adddf17c1e7c026c",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "golang.org/x/net/bpf",
+			"repository": "https://go.googlesource.com/net",
+			"vcs": "git",
+			"revision": "dfa909b99c79129e1100513e5cd36307665e5723",
+			"branch": "master",
+			"path": "bpf",
+			"notests": true
+		},
+		{
+			"importpath": "golang.org/x/net/icmp",
+			"repository": "https://go.googlesource.com/net",
+			"vcs": "git",
+			"revision": "dfa909b99c79129e1100513e5cd36307665e5723",
+			"branch": "master",
+			"path": "icmp",
+			"notests": true
+		},
+		{
+			"importpath": "golang.org/x/net/internal/iana",
+			"repository": "https://go.googlesource.com/net",
+			"vcs": "git",
+			"revision": "dfa909b99c79129e1100513e5cd36307665e5723",
+			"branch": "master",
+			"path": "internal/iana",
+			"notests": true
+		},
+		{
+			"importpath": "golang.org/x/net/internal/socket",
+			"repository": "https://go.googlesource.com/net",
+			"vcs": "git",
+			"revision": "dfa909b99c79129e1100513e5cd36307665e5723",
+			"branch": "master",
+			"path": "internal/socket",
+			"notests": true
+		},
+		{
+			"importpath": "golang.org/x/net/ipv4",
+			"repository": "https://go.googlesource.com/net",
+			"vcs": "git",
+			"revision": "dfa909b99c79129e1100513e5cd36307665e5723",
+			"branch": "master",
+			"path": "ipv4",
+			"notests": true
+		},
+		{
+			"importpath": "golang.org/x/net/ipv6",
+			"repository": "https://go.googlesource.com/net",
+			"vcs": "git",
+			"revision": "dfa909b99c79129e1100513e5cd36307665e5723",
+			"branch": "master",
+			"path": "/ipv6",
+			"notests": true
+		}
+	]
+}
