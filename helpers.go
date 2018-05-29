@@ -68,23 +68,31 @@ func webStreamHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, webStream)
 }
 
-func printFirstHeader() {
+func printFirstHeader(labels []string) {
 	index := 1
 	for _, key := range ipList {
 		for _, content := range ipListMap[key] {
-			fmt.Printf("%d=%s\n", index, content)
+			if len(labels) > 0 {
+				fmt.Printf("%s=%s\n", labels[index-1], content)
+			} else {
+				fmt.Printf("%d=%s\n", index, content)
+			}
 			index++
 		}
 	}
 }
 
-func printHeader() {
-	fmt.Printf("    ")
+func printHeader(hw string, labels []string) {
+	fmt.Printf("%"+hw+"s", " ")
 	index := 0
 	for _, key := range ipList {
-		for _ = range ipListMap[key] {
+		for range ipListMap[key] {
 			index++
-			fmt.Printf(" %"+width+"d", index)
+			if len(labels) > 0 {
+				fmt.Printf(" %"+width+"s", labels[index-1])
+			} else {
+				fmt.Printf(" %"+width+"d", index)
+			}
 		}
 	}
 	fmt.Println(" ")
@@ -96,7 +104,7 @@ func checkHostErr(host string, err error) {
 	}
 }
 
-func printHostIpStat(host string) {
+func printHostIPStat(host string) {
 	pingStatsHost := make(map[string]stats)
 	hoststat := pingStatsHost[host]
 	ipcount := len(ipListMap[host])
@@ -160,7 +168,7 @@ func printHostIpStat(host string) {
 func printStat() {
 	fmt.Printf("\n%-39s: %4s %4s %4s   %5s\n", "source", "min", "max", "avg", "ploss")
 	for _, host := range ipList {
-		printHostIpStat(host)
+		printHostIPStat(host)
 		fmt.Println()
 	}
 }
