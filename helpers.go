@@ -68,11 +68,15 @@ func webStreamHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, webStream)
 }
 
-func printFirstHeader() {
+func printFirstHeader(labels []string) {
 	index := 1
 	for _, key := range ipList {
 		for _, content := range ipListMap[key] {
-			fmt.Printf("%d=%s\n", index, content)
+			if len(labels) > 0 {
+				fmt.Printf("%s=%s\n", labels[index-1], content)
+			} else {
+				fmt.Printf("%d=%s\n", index, content)
+			}
 			index++
 		}
 	}

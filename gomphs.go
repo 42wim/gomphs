@@ -56,12 +56,6 @@ func init() {
 			flag.PrintDefaults()
 			os.Exit(2)
 		}
-		for _, label := range inputLabels {
-			widthInt, _ := strconv.Atoi(width)
-			if len(label) > widthInt {
-				width = strconv.Itoa(len(label))
-			}
-		}
 	}
 	if flagNoColor {
 		color.NoColor = true
@@ -159,19 +153,20 @@ func main() {
 			lookups, err := net.LookupIP(host)
 			checkHostErr(host, err)
 			ipList = append(ipList, host)
+			hostLabelIndex := 1
 			for _, ip := range lookups {
 				ra := &net.IPAddr{IP: ip}
 				p.AddIPAddr(ra)
 				ipListMap[host] = append(ipListMap[host], ra.String())
 				if len(inputLabels) > 0 {
-					ipLabelList = append(ipLabelList, inputLabels[labelIndex])
+					ipLabelList = append(ipLabelList, inputLabels[labelIndex]+"-"+strconv.Itoa(hostLabelIndex))
 				}
+				hostLabelIndex++
 			}
 		} else {
 			ra, err := net.ResolveIPAddr("ip:icmp", host)
 			checkHostErr(host, err)
 			p.AddIPAddr(ra)
-			ipLabelList = append(ipLabelList, ra.String())
 			ipList = append(ipList, ra.String())
 			ipListMap[ra.String()] = append(ipListMap[ra.String()], ra.String())
 			if len(inputLabels) > 0 {
@@ -179,6 +174,12 @@ func main() {
 			}
 		}
 		labelIndex++
+	}
+	for _, label := range ipLabelList {
+		widthInt, _ := strconv.Atoi(width)
+		if len(label) > widthInt {
+			width = strconv.Itoa(len(label))
+		}
 	}
 	g.IPList = ipList
 	g.IPListMap = ipListMap
@@ -194,9 +195,9 @@ func main() {
 	p.OnIdle = func() {
 		if rowcounter%25 == 0 {
 			if flagTimestamp {
-				printHeader("25", inputLabels)
+				printHeader("25", ipLabelList)
 			} else {
-				printHeader("4", inputLabels)
+				printHeader("4", ipLabelList)
 			}
 			if rowcounter%10000 == 0 {
 				printcounter = 0
@@ -236,7 +237,7 @@ func main() {
 		printcounter++
 	}
 	if flagExpandDNS {
-		printFirstHeader()
+		printFirstHeader(ipLabelList)
 	}
 	for {
 		if rowcounter == maxPingCount {
