@@ -98,12 +98,9 @@ func (hd milliDuration) Int() int {
 }
 
 type gomphs struct {
-	latestEntry   []byte
-	pingIP        string
-	flagShowRTT   bool
-	flagExpandDNS bool
-	IPList        []string
-	IPListMap     map[string][]string
+	latestEntry []byte
+	IPList      []string
+	IPListMap   map[string][]string
 }
 
 type stats struct {
