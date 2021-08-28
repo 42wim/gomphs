@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
@@ -18,7 +19,7 @@ import (
 	fastping "github.com/tatsushid/go-fastping"
 )
 
-var pingIP, listenPort, pingLabel string
+var pingIP, pingIPfile, listenPort, pingLabel string
 var flagExpandDNS, flagShowRTT, flagEnableWeb, flagNoColor, flagTimestamp bool
 var width = "2"
 var rowcounter, maxPingCount int
@@ -35,6 +36,7 @@ func init() {
 	flag.BoolVar(&flagTimestamp, "timestamp", false, "enables timestamp instead of ping count")
 	flag.StringVar(&listenPort, "port", "8887", "port the webserver listens on")
 	flag.StringVar(&pingIP, "hosts", "", "ip addresses/hosts to ping, space seperated (e.g \"8.8.8.8 8.8.4.4 google.com 2a00:1450:400c:c07::66\")")
+	flag.StringVar(&pingIPfile, "file", "", "ip addresses/hosts file to ping, space seperated (e.g \"8.8.8.8 8.8.4.4 google.com 2a00:1450:400c:c07::66\")")
 	flag.StringVar(&pingLabel, "labels", "", "labels matching the hosts, must be the same amount of values as the hosts")
 	flag.BoolVar(&flagShowRTT, "showrtt", false, "show roundtrip time in ms")
 	flag.IntVar(&maxPingCount, "c", 99999, "packets to send")
@@ -47,6 +49,15 @@ func init() {
 	}
 	if flagShowRTT {
 		width = "5"
+	}
+	if pingIP == "" {
+		b, err := ioutil.ReadFile(pingIPfile)
+		if err != nil || string(b) == "" {
+			fmt.Println("Error: Hosts not found")
+			flag.PrintDefaults()
+			os.Exit(3)
+		}
+		pingIP = string(b)
 	}
 	inputHosts = strings.Fields(pingIP)
 	if len(pingLabel) > 0 {

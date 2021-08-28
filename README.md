@@ -12,12 +12,28 @@ When using hostnames with ipv4 and ipv6 addresses, preference goes to ipv4. (-ex
 ```
 # gomphs
 Usage of ./gomphs:
-  -expand=false: use all available ip's (ipv4/ipv6) of a hostname (multiple A, AAAA)
-  -hosts="": ip addresses/hosts to ping, space seperated (e.g "8.8.8.8 8.8.4.4 google.com 2a00:1450:400c:c07::66")
-  -nocolor=false: disable color output
-  -port="8887": port the webserver listens on
-  -showrtt=false: show roundtrip time in ms
-  -web=false: enable webserver
+  -c int
+        packets to send (default 99999)
+  -expand
+        use all available ip's (ipv4/ipv6) of a hostname (multiple A, AAAA)
+  -file string
+        ip addresses/hosts file to ping, space seperated (e.g "8.8.8.8 google.com 2a00:1450:400c:c07::66")
+  -hosts string
+        ip addresses/hosts to ping, space seperated (e.g "8.8.8.8 google.com 2a00:1450:400c:c07::66")
+  -i int
+        Ping interval in Milliseconds (default 1000)
+  -labels string
+        labels matching the hosts, must be the same amount of values as the hosts
+  -nocolor
+        disable color output
+  -port string
+        port the webserver listens on (default "8887")
+  -showrtt
+        show roundtrip time in ms
+  -timestamp
+        enables timestamp instead of ping count
+  -web
+        enable webserver
 ```
 
 ##### no options
@@ -67,12 +83,9 @@ Make sure you have [Go](https://golang.org/doc/install) properly installed, incl
 
 Next, clone this repository into $GOPATH/src/github.com/42wim/gomphs
 
-```
-$ mkdir -p $GOPATH/src/github.com/42wim
-$ cd $GOPATH/src/github.com/42wim
+``` bash
 $ git clone https://github.com/42wim/gomphs.git
 $ cd gomphs
-$ go get
 $ go build
 ```
 
