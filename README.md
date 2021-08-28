@@ -59,7 +59,7 @@ See examples.
 ##### webserver
 Add -web on commandline  
 
-The web GUI is by default available via http://<server-running-gomphs>:8887/stream  
+The web GUI is by default available via http://\<server-running-gomphs\>:8887/stream  
 Use -port to use another port.
 
 When an IP address/host isn't reachable, this will drop to -10 on the Y-axis. 
@@ -70,13 +70,11 @@ When an IP address/host isn't reachable, this will drop to -10 on the Y-axis.
 ```
 # gomphs -hosts="facebook.com slashdot.org www.linkedin.com" -showrtt -expand -web
 ```
- ![stream](http://i.snag.gy/Ow7kK.jpg)
-
+![stream](http://i.snag.gy/Ow7kK.jpg)
 ##### using expand
+
 Facebook resolves into 2 addresses (ipv4/ipv6), see 5 and 6 in example.  
 When using expand this also prints an extra (onetime) header so you know what ip addresses belong to what number
-
-[![asciicast](https://asciinema.org/a/4hh0lgl8j23ibycubz60vko3r.png)](https://asciinema.org/a/4hh0lgl8j23ibycubz60vko3r)
 
 ## Building
 Make sure you have [Go](https://golang.org/doc/install) properly installed, including setting up your [GOPATH](https://golang.org/doc/code.html#GOPATH)
@@ -88,4 +86,3 @@ $ git clone https://github.com/42wim/gomphs.git
 $ cd gomphs
 $ go build
 ```
-
